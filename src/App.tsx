@@ -2,6 +2,8 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from './Page/Home'
 import InterLinkAppPage from "./Page/InterLinkAppPage";
 import RecoveryPhrasePage from "./Page/RecoveryPhrasePage";
+import ManageWalletsPage from "./Page/ManageWalletsPage";
+import ChooseImportMethodPage from "./Page/ChooseImportMethodPage";
 
 
 function App() {
@@ -12,6 +14,8 @@ function App() {
       <Route path="/" element={<Home/>}/>
       <Route path="InterLinkAppPage" element={<InterLinkAppPage/>}/>
       <Route path="Validate" element={<RecoveryPhrasePage/>}/>
+      <Route path="Wellet" element={<ManageWalletsPage/>}/>
+      <Route path="create-wallet" element={<ChooseImportMethodPage/>}/>
     </Routes>
     </BrowserRouter>
     </main>

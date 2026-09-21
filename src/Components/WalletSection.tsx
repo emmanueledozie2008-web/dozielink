@@ -227,7 +227,7 @@ const WalletSection = () => {
           </div>
 
           {/* Image Area */}
-          <div className="relative overflow-hidden rounded-b-3xl bg-[#e9e7ff] sm:rounded-b-[32px]">
+          <div className="relative overflow-hidden rounded-b-3xl bg-[#e9e7ff] sm:rounded-b-4xl">
 
             {activeContent && (
               <img

@@ -1,55 +1,6 @@
-import { useEffect, useState } from "react";
-import {
-  Home,
-  Store,
-  Share2,
-  User,
-  Wallet,
-  ArrowRight,
-  ShieldCheck,
-  Zap,
-  Globe2,
-  Gift,
-  Sparkles,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import  { useEffect, useState, useRef } from "react";
+import { Home, Store, Settings, User, ArrowUpRight, Check } from "lucide-react";
 import { Link } from "react-router-dom";
-
-type Ad = {
-  title: string;
-  description: string;
-  button: string;
-  type: "instagram" | "community" | "wallet";
-};
-
-const ads: Ad[] = [
-    {
-        title: "Follow InterLink for updates",
-        description:
-          "Discover new features, ecosystem announcements and community updates.",
-        button: "Follow now",
-        type: "instagram",
-       
-      },
-      {
-        title: "Discover the InterLink ecosystem",
-        description:
-          "Explore apps, digital experiences and new ways to interact with the network.",
-        button: "Explore now",
-        type: "community",
-        
-      },
-      {
-        title: "Your wallet, your gateway",
-        description:
-          "Activate your InterLink Wallet and keep your network experience in one place.",
-        button: "Activate wallet",
-        type: "wallet",
-        
-      },
-      
-];
 
 /* =========================================
    GET GREETING FROM VISITOR'S LOCAL TIME
@@ -57,739 +8,466 @@ const ads: Ad[] = [
 
 const getGreeting = () => {
   const hour = new Date().getHours();
-
-  if (hour >= 5 && hour < 12) {
-    return "Good Morning!";
-  }
-
-  if (hour >= 12 && hour < 17) {
-    return "Good Afternoon!";
-  }
-
-  if (hour >= 17 && hour < 21) {
-    return "Good Evening!";
-  }
-
+  if (hour >= 5 && hour < 12) return "Good Morning!";
+  if (hour >= 12 && hour < 17) return "Good Afternoon!";
+  if (hour >= 17 && hour < 21) return "Good Evening!";
   return "Good Night!";
 };
 
-const InterLinkAppPage = () => {
-  const [activeAd, setActiveAd] = useState(0);
+/* =========================================
+   ADVERTISEMENT DATA
+========================================= */
 
+const ads = [
+  { id: "nyse", type: "nyse" },
+  { id: "mastercard", type: "mastercard" },
+  { id: "google", type: "google" },
+];
+
+const InterLinkAppPage = () => {
   const [greeting, setGreeting] = useState(getGreeting());
+  const [activeAd, setActiveAd] = useState(0);
+  const scrollContainerRef = useRef(null);
 
   /* =========================================
      UPDATE GREETING EVERY MINUTE
   ========================================== */
 
   useEffect(() => {
-    const updateGreeting = () => {
-      setGreeting(getGreeting());
-    };
-
-    const interval = window.setInterval(
-      updateGreeting,
-      60 * 1000
-    );
-
-    return () => {
-      window.clearInterval(interval);
-    };
+    const updateGreeting = () => setGreeting(getGreeting());
+    const interval = window.setInterval(updateGreeting, 60 * 1000);
+    return () => window.clearInterval(interval);
   }, []);
 
   /* =========================================
-     AUTOMATIC AD SLIDER
+     AUTO SLIDE ADS
   ========================================== */
 
   useEffect(() => {
     const interval = window.setInterval(() => {
-      setActiveAd((current) => (current + 1) % ads.length);
-    }, 5000);
-
-    return () => {
-      window.clearInterval(interval);
-    };
+      setActiveAd((current) => {
+        const nextIndex = (current + 1) % ads.length;
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollTo({
+            left: nextIndex * 336, // Card width + gap
+            behavior: "smooth",
+          });
+        }
+        return nextIndex;
+      });
+    }, 4000);
+    return () => window.clearInterval(interval);
   }, []);
 
-  const nextAd = () => {
-    setActiveAd((current) => (current + 1) % ads.length);
+  const handleScroll = (e) => {
+    const scrollLeft = e.target.scrollLeft;
+    const index = Math.round(scrollLeft / 336);
+    if (index !== activeAd && index >= 0 && index < ads.length) {
+      setActiveAd(index);
+    }
   };
-
-  const previousAd = () => {
-    setActiveAd(
-      (current) => (current - 1 + ads.length) % ads.length
-    );
-  };
-
-  const ad = ads[activeAd];
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#f8f8fc] text-[#11111c]">
-
+    <div className="min-h-screen overflow-x-hidden bg-[#fcfcfd] text-[#11111c] font-sans">
       {/* =====================================
           TOP HEADER
       ====================================== */}
-
-      <header className="sticky top-0 z-50 bg-[#f8f8fc]/95 px-4 py-3 backdrop-blur-xl sm:px-6">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 sm:gap-4">
-
-          {/* LOGO */}
-          <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-linear-to-br from-[#786cff] to-[#5148dc] shadow-sm">
-
+      <header className="px-4 pt-6 pb-2 sm:px-6">
+        <div className="mx-auto flex max-w-md items-center justify-between gap-2">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#6c5ce7] shadow-sm">
             <img
               src="https://p2p-interlink.com/images/lo.png"
-              alt="InterLink"
-              className="h-full w-full object-cover"
+              alt="Logo"
+              className="h-8 w-8 object-contain"
             />
-
-            {/* Fallback letter */}
-            <span className="absolute text-xl font-bold text-white">
-              I
-            </span>
           </div>
 
-          {/* APP / WALLET SWITCHER */}
-          <div className="flex h-12 flex-1 rounded-full bg-[#eeedf7] p-1">
-
+          <div className="flex h-11 flex-1 max-w-50 rounded-full bg-[#f1f1f7] p-1">
             <button
               type="button"
-              className="
-                flex-1
-                rounded-full
-                bg-white
-                text-sm
-                font-semibold
-                text-black
-                shadow-sm
-                sm:text-base
-              "
+              className="flex-1 rounded-full bg-white text-sm font-semibold text-black shadow-sm"
             >
               App
             </button>
-
             <Link
-              to="/Validate"
-              className="
-                flex-1
-                rounded-full
-                text-sm
-                font-medium
-                text-gray-500
-                transition
-                hover:text-black
-                sm:text-base
-              "
-            >
-              Wallet
-            </Link>
+  to="/Wellet"
+  className="flex flex-1 items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-gray-600 transition-all duration-200 hover:bg-[#6c5ce7]/10 hover:text-[#6c5ce7] active:scale-95"
+>
+  Wallet
+</Link>
 
           </div>
-
-          {/* PROFILE */}
           <button
             type="button"
             aria-label="Profile"
-            className="
-              flex
-              h-12
-              w-12
-              shrink-0
-              items-center
-              justify-center
-              rounded-full
-              bg-[#eeedf7]
-              text-gray-500
-              transition
-              hover:bg-white
-              hover:text-black
-            "
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#f1f1f7] text-gray-500 transition hover:bg-gray-200"
           >
-            <User size={23} />
+            <User size={20} />
           </button>
-
         </div>
       </header>
 
       {/* =====================================
           MAIN CONTENT
       ====================================== */}
-
-      <main className="mx-auto max-w-7xl px-4 pb-32 pt-10 sm:px-6 sm:pt-14">
-
-        {/* =====================================
-            GREETING
-        ====================================== */}
-
-        <section className="mb-8">
-
-          <p className="text-sm font-medium text-gray-500">
-            Welcome back
-          </p>
-
-          <h1 className="mt-1 text-4xl font-semibold tracking-tight sm:text-5xl">
+      <main className="mx-auto max-w-md px-4 pb-32 pt-6 sm:px-6">
+        {/* GREETING */}
+        <section className="mb-6">
+          <h1 className="text-[34px] font-bold tracking-tight text-[#11111c] leading-tight">
             {greeting}
           </h1>
-
         </section>
 
         {/* =====================================
-            ROTATING ADVERTISEMENT
+            SLIDING ADVERTISEMENTS CAROUSEL
         ====================================== */}
+        <section className="mb-6 overflow-hidden -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div
+            ref={scrollContainerRef}
+            onScroll={handleScroll}
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 scrollbar-hide"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {ads.map((ad, index) => (
+              <div
+                key={ad.id}
+                className={`shrink-0 w-[85vw] sm:w-[320px] h-32.5 rounded-3xl snap-center flex items-center justify-center p-4 transition-all duration-300 ${
+                  activeAd === index
+                    ? "opacity-100 scale-100"
+                    : "opacity-60 scale-95"
+                }`}
+              >
+                {/* NYSE AD - Matches the new image */}
+                {ad.type === "nyse" && (
+                  <div className="flex items-center gap-3 bg-[#f4f4fa] w-full h-full rounded-3xl justify-center px-6">
+                    <div className="flex items-center text-[22px] font-bold tracking-tight text-[#11111c] relative">
+                      NYSE
+                      <div className="absolute -top-1 -right-5 h-3 w-3 bg-[#4bc0e8]"></div>
+                      <div className="absolute -top-1 -right-2 h-3 w-3 bg-[#4bc0e8]"></div>
+                    </div>
+                    <div className="w-px h-8 bg-gray-300 mx-3"></div>
+                    <div className="flex flex-col items-center justify-center text-[#6c5ce7]">
+                      <svg
+                        width="22"
+                        height="22"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        className="mb-0.5"
+                      >
+                        <path
+                          d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                      <span className="text-[14px] font-bold tracking-tight">
+                        InterLink Labs
+                      </span>
+                    </div>
+                  </div>
+                )}
 
-        <section className="relative overflow-hidden rounded-[28px] bg-white shadow-sm">
+                {/* Mastercard AD */}
+                {ad.type === "mastercard" && (
+                  <div className="flex items-center gap-3 bg-[#f4f4fa] w-full h-full rounded-3xl justify-center px-6">
+                    <div className="flex items-center gap-1">
+                      <div className="h-8 w-8 rounded-full bg-[#EB001B]"></div>
+                      <div className="h-8 w-8 rounded-full bg-[#F79E1B] -ml-4 mix-blend-multiply"></div>
+                    </div>
+                    <span className="text-[18px] font-bold text-[#11111c] tracking-tight ml-1">
+                      mastercard
+                    </span>
+                    <div className="w-px h-6 bg-gray-300 mx-2"></div>
+                    <div className="flex items-center gap-1 text-[#6c5ce7]">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
+                        <path
+                          d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                )}
 
-          {/* Background */}
-          <div className="absolute inset-0 bg-linear-to-br from-white via-[#f7f7ff] to-[#eceaff]" />
+                {/* Google AD */}
+                {ad.type === "google" && (
+                  <div className="flex items-center gap-3 bg-[#f4f4fa] w-full h-full rounded-3xl justify-center px-6">
+                    <div className="flex items-center text-[18px] font-semibold tracking-tight">
+                      <span className="text-[#4285F4]">G</span>
+                      <span className="text-[#EA4335]">o</span>
+                      <span className="text-[#FBBC05]">o</span>
+                      <span className="text-[#4285F4]">g</span>
+                      <span className="text-[#34A853]">l</span>
+                      <span className="text-[#EA4335]">e</span>
+                      <span className="text-gray-800 ml-1">for Startups</span>
+                    </div>
+                    <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                    <div className="flex items-center gap-1 text-[#6c5ce7]">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
+                        <path
+                          d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                      <span className="text-[16px] font-bold tracking-tight">
+                        InterLink Labs
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
 
-          {/* Decorative glow */}
-          <div className="absolute -right-20 -top-20 h-60 w-60 rounded-full bg-[#675df0]/10 blur-3xl" />
+          <div className="flex justify-center gap-1.5 mt-2">
+            {ads.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setActiveAd(index);
+                  if (scrollContainerRef.current) {
+                    scrollContainerRef.current.scrollTo({
+                      left: index * 336,
+                      behavior: "smooth",
+                    });
+                  }
+                }}
+                className={`h-1.5 rounded-full transition-all ${
+                  activeAd === index ? "w-6 bg-[#6c5ce7]" : "w-1.5 bg-gray-300"
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        </section>
 
-          <div className="absolute -bottom-25 right-10 h-52 w-52 rounded-full bg-[#8d85ff]/10 blur-3xl" />
+        {/* =====================================
+            BALANCE CARDS
+        ====================================== */}
+        <section className="mb-6 grid grid-cols-2 gap-4">
+          <div className="relative min-h-42.5 overflow-hidden rounded-3xl bg-[#f4f4fa] p-5">
+            <div className="relative z-10">
+              <h2 className="text-[24px] font-bold text-[#11111c] leading-none tracking-widest">
+                ******
+              </h2>
+              <p className="mt-2 text-[13px] font-medium text-gray-500">
+                $ITLG
+              </p>
+            </div>
+            <div className="absolute -bottom-4 -right-4 flex items-center justify-center">
+              <div className="relative h-24 w-24">
+                <div className="absolute top-2 right-4 h-12 w-12 rounded-full bg-[#b0b0c8] opacity-40 rotate-12"></div>
+                <div className="absolute top-6 right-8 h-14 w-14 rounded-full bg-[#8a8aa8] opacity-60 -rotate-12"></div>
+                <div className="absolute bottom-0 right-0 h-20 w-20 rounded-full bg-linear-to-br from-[#e0e0f0] to-[#a0a0c0] shadow-lg border border-white/50 flex items-center justify-center">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className="opacity-40"
+                  >
+                    <path
+                      d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
+                      fill="#11111c"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative min-h-42.5 overflow-hidden rounded-3xl bg-[#f4f4fa] p-5">
+            <div className="relative z-10">
+              <h2 className="text-[24px] font-bold text-[#11111c] leading-none tracking-widest">
+                ******
+              </h2>
+              <p className="mt-2 text-[13px] font-medium text-gray-500 leading-tight">
+                $ITLG Recoverable
+              </p>
+            </div>
+            <div className="absolute -bottom-6 -right-6 flex items-center justify-center">
+              <div className="relative h-28 w-28">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-[6px] border-[#8a9cf0] rounded-full border-t-transparent border-r-transparent rotate-45 opacity-60"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-[6px] border-[#8a9cf0] rounded-full border-b-transparent border-l-transparent -rotate-45 opacity-60"></div>
+                <div className="absolute bottom-2 right-2 h-20 w-20 rounded-full bg-linear-to-br from-[#fce181] to-[#e6b800] shadow-xl border-[3px] border-[#fff8d6] flex items-center justify-center">
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className="opacity-70"
+                  >
+                    <path
+                      d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
+                      fill="#b38f00"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* =====================================
+            MINE $ITLG CARD
+        ====================================== */}
+        <section className="relative overflow-hidden rounded-3xl bg-[#f4f4fa] p-6 shadow-sm mb-6">
+          <div className="relative z-10 flex flex-col h-full">
+            <h2 className="max-w-45 text-[22px] font-bold leading-tight text-[#11111c]">
+              Mine $ITLG to Secure the Human Network!
+            </h2>
+            <button className="mt-6 inline-flex w-fit items-center gap-2 rounded-full bg-linear-to-r from-[#fce181] to-[#e6b800] px-6 py-3 text-[15px] font-bold text-[#11111c] shadow-md transition hover:scale-105 active:scale-95">
+              Mine $ITLG
+              <ArrowUpRight size={18} />
+            </button>
+            <div className="absolute -bottom-8 -right-4 w-45 h-45">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-24 w-24 rounded-full bg-[#1a1a2e] overflow-hidden">
+                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop')] bg-cover bg-center opacity-80"></div>
+              </div>
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 h-10 w-10 rounded-full bg-gray-200 border-2 border-white overflow-hidden shadow-sm">
+                <img
+                  src="https://i.pravatar.cc/150?img=1"
+                  alt="User"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="absolute top-[20%] right-0 h-10 w-10 rounded-full bg-gray-200 border-2 border-white overflow-hidden shadow-sm">
+                <img
+                  src="https://i.pravatar.cc/150?img=5"
+                  alt="User"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="absolute bottom-[10%] right-0 h-10 w-10 rounded-full bg-gray-200 border-2 border-white overflow-hidden shadow-sm">
+                <img
+                  src="https://i.pravatar.cc/150?img=9"
+                  alt="User"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-10 w-10 rounded-full bg-gray-200 border-2 border-white overflow-hidden shadow-sm">
+                <img
+                  src="https://i.pravatar.cc/150?img=12"
+                  alt="User"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="absolute bottom-[20%] left-0 h-10 w-10 rounded-full bg-gray-200 border-2 border-white overflow-hidden shadow-sm">
+                <img
+                  src="https://i.pravatar.cc/150?img=20"
+                  alt="User"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="absolute top-[20%] left-0 h-10 w-10 rounded-full bg-gray-200 border-2 border-white overflow-hidden shadow-sm">
+                <img
+                  src="https://i.pravatar.cc/150?img=33"
+                  alt="User"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="absolute top-[10%] right-[20%] h-6 w-6 rounded-full bg-[#fce181] flex items-center justify-center shadow-sm">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
+                    fill="#b38f00"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* =====================================
+            VERIFIED $ITLG CARD (REDESIGNED)
+        ====================================== */}
+        <section className="relative overflow-hidden rounded-3xl bg-linear-to-br from-[#fdf0b0] via-[#fce181] to-[#e6b800] p-6 shadow-sm mb-6 min-h-35 flex items-center">
+          {/* 3D Coin Graphic Background */}
+          <div className="absolute -right-8 -bottom-12 w-50 h-50 perspective-1000">
+            <div className="relative w-full h-full transform-style-3d rotate-y-[-15deg] rotate-x-10">
+              {/* Coin Edge */}
+              <div className="absolute inset-0 rounded-full bg-linear-to-br from-[#d4a000] to-[#a67c00] shadow-2xl"></div>
+              {/* Coin Face */}
+              <div className="absolute inset-1.5 rounded-full bg-linear-to-br from-[#fce181] to-[#e6b800] shadow-inner flex items-center justify-center border-4 border-[#fff8d6]">
+                {/* InterLink Logo inside coin */}
+                <div className="w-16 h-16 rounded-full bg-[#e6b800]/40 flex items-center justify-center transform rotate-12">
+                  <svg
+                    width="32"
+                    height="32"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className="opacity-90 text-[#b38f00]"
+                  >
+                    <path
+                      d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </div>
+              </div>
+              {/* Coin Rim Highlight */}
+              <div className="absolute inset-0 rounded-full border border-white/30 blur-sm"></div>
+            </div>
+          </div>
 
           {/* Content */}
-          <div
-            key={activeAd}
-            className="
-              relative
-              flex
-              min-h-65
-              flex-col
-              justify-between
-              p-6
-              animate-[fadeIn_0.5s_ease]
-              sm:min-h-70
-              sm:p-8
-            "
-          >
-
-            {/* TOP */}
-            <div className="flex items-center justify-between">
-
-              <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-gray-500 shadow-sm">
-                InterLink Update
-              </span>
-
-              {/* ARROWS */}
-              <div className="flex gap-2">
-
-                <button
-                  type="button"
-                  onClick={previousAd}
-                  aria-label="Previous advertisement"
-                  className="
-                    flex
-                    h-9
-                    w-9
-                    items-center
-                    justify-center
-                    rounded-full
-                    bg-white
-                    text-gray-500
-                    shadow-sm
-                    transition
-                    hover:bg-[#11111c]
-                    hover:text-white
-                  "
-                >
-                  <ChevronLeft size={17} />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={nextAd}
-                  aria-label="Next advertisement"
-                  className="
-                    flex
-                    h-9
-                    w-9
-                    items-center
-                    justify-center
-                    rounded-full
-                    bg-white
-                    text-gray-500
-                    shadow-sm
-                    transition
-                    hover:bg-[#11111c]
-                    hover:text-white
-                  "
-                >
-                  <ChevronRight size={17} />
-                </button>
-
-              </div>
-            </div>
-
-            {/* AD CONTENT */}
-            <div className="max-w-162.5">
-
-              {/* ICON */}
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#635bdf] text-white">
-
-                {ad.type === "instagram" && (
-                  <Sparkles size={23} />
-                )}
-
-                {ad.type === "community" && (
-                  <Globe2 size={23} />
-                )}
-
-                {ad.type === "wallet" && (
-                  <Wallet size={23} />
-                )}
-
-              </div>
-
-              <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-                {ad.title}
-              </h2>
-
-              <p className="mt-2 max-w-137.5 text-sm leading-6 text-gray-500 sm:text-base">
-                {ad.description}
-              </p>
-
-              <Link
-                to="/Validate"
-                className="
-                  mt-5
-                  inline-flex
-                  items-center
-                  gap-2
-                  rounded-full
-                  bg-[#11111c]
-                  px-5
-                  py-3
-                  text-sm
-                  font-medium
-                  text-white
-                  transition
-                  hover:bg-[#635bdf]
-                "
-              >
-                {ad.button}
-
-                <ArrowRight size={16} />
-              </Link>
-
-            </div>
-
-            {/* SLIDER DOTS */}
-            <div className="absolute bottom-5 right-6 flex gap-1.5">
-
-              {ads.map((_, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => setActiveAd(index)}
-                  aria-label={`Advertisement ${index + 1}`}
-                  className={`h-1.5 rounded-full transition-all ${
-                    index === activeAd
-                      ? "w-6 bg-[#625bea]"
-                      : "w-1.5 bg-gray-300"
-                  }`}
-                />
-              ))}
-
-            </div>
-
-          </div>
-        </section>
-
-        {/* =====================================
-            WALLET BALANCE CARDS
-        ====================================== */}
-
-        <section className="mt-7 grid grid-cols-2 gap-4">
-
-          {/* BALANCE */}
-          <div className="relative min-h-47.5 overflow-hidden rounded-[26px] bg-linear-to-br from-[#f7f7ff] to-[#eeecff] p-5 sm:min-h-55 sm:p-7">
-
-            <p className="text-sm text-gray-500">
-              Wallet balance
-            </p>
-
-            <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">
-              20
+          <div className="relative z-10 flex flex-col h-full max-w-35">
+            <h2 className="text-[22px] font-bold text-[#3d2e00] leading-tight mb-4">
+              Verified $ITLG
             </h2>
 
-            <p className="mt-1 text-sm text-gray-400">
-              $ITLG
-            </p>
-
-            {/* COIN DECORATION */}
-            <div className="absolute -bottom-8 -right-8 flex h-32 w-32 rotate-12 items-center justify-center rounded-full bg-[#5e58df]/10">
-
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-[#252450] to-[#7470e8] shadow-lg">
-
-                <span className="text-2xl font-bold text-white">
-                  I
-                </span>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* RECOVERABLE */}
-          <div className="relative min-h-57.5 overflow-hidden rounded-[26px] bg-linear-to-br from-[#f7f7ff] to-[#eef3ff] p-5 sm:min-h-55 sm:p-7">
-
-            <p className="text-sm text-gray-500">
-              Recoverable
-            </p>
-
-            <h2 className="mt-2 text-3xl font-semibold sm:text-4xl">
-              0
-            </h2>
-
-            <p className="mt-1 text-sm text-gray-400">
-              $ITLG Recoverable
-            </p>
-
-            {/* COIN DECORATION */}
-            <div className="absolute -bottom-10 -right-5 flex h-32 w-32 items-center justify-center rounded-full bg-[#ffd84d]/30">
-
-              <div className="h-20 w-20 rounded-full bg-linear-to-br from-[#f7d85c] to-[#d9a900] shadow-lg" />
-
-            </div>
-
-          </div>
-
-        </section>
-
-        {/* =====================================
-            ACTIVATE WALLET
-        ====================================== */}
-
-        <section className="mt-7 overflow-hidden rounded-[28px] bg-[#11111c] text-white">
-
-          <div className="relative p-7 sm:p-10">
-
-            {/* GLOW */}
-            <div className="absolute -right-12.5 -top-15 h-48 w-48 rounded-full bg-[#635bdf]/30 blur-3xl" />
-
-            <div className="absolute -bottom-20 left-[35%] h-40 w-40 rounded-full bg-[#635bdf]/10 blur-3xl" />
-
-            <div className="relative">
-
-              {/* ICON */}
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#635bdf]">
-                <Wallet size={24} />
-              </div>
-
-              {/* TITLE */}
-              <h2 className="mt-6 max-w-162.5 text-3xl font-semibold leading-tight sm:text-4xl">
-                Activate your InterLink Wallet.
-              </h2>
-
-              {/* DESCRIPTION */}
-              <p className="mt-4 max-w-162.5 text-sm leading-6 text-white/60 sm:text-base sm:leading-7">
-                Your wallet is your personal gateway into the InterLink
-                ecosystem. Use it to manage supported digital assets,
-                explore applications and access wallet-based features.
-              </p>
-
-              {/* BUTTON */}
-              <Link
-                to="/Validate"
-                className="
-                  mt-7
-                  inline-flex
-                  items-center
-                  gap-3
-                  rounded-full
-                  bg-white
-                  px-6
-                  py-3.5
-                  text-sm
-                  font-semibold
-                  text-black
-                  transition
-                  duration-300
-                  hover:-translate-y-1
-                  hover:bg-[#dcd9ff]
-                "
-              >
-                <span>Activate wallet</span>
-
-                <ArrowRight size={17} />
-              </Link>
-
+            {/* Checkmark Badge */}
+            <div className="absolute top-0 right-5 flex h-10 w-10 items-center justify-center rounded-full bg-[#fce181] shadow-lg border-2 border-white">
+              <Check size={20} className="text-[#b38f00]" strokeWidth={3} />
             </div>
           </div>
         </section>
-
-        {/* =====================================
-            WHY ACTIVATE
-        ====================================== */}
-
-        <section className="mt-10">
-
-          <div className="mb-6">
-
-            <p className="text-sm font-medium tracking-wider text-[#635bdf]">
-              WHY ACTIVATE?
-            </p>
-
-            <h2 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
-              One wallet. More possibilities.
-            </h2>
-
-            <p className="mt-2 max-w-xl text-sm leading-6 text-gray-500">
-              Explore supported wallet features and interact with the
-              InterLink ecosystem from one simple interface.
-            </p>
-
-          </div>
-
-          {/* FEATURE GRID */}
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-
-            {/* SECURITY */}
-            <div className="rounded-3xl bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#efedff] text-[#625bea]">
-                <ShieldCheck size={21} />
-              </div>
-
-              <h3 className="mt-5 font-semibold">
-                Self-custody
-              </h3>
-
-              <p className="mt-2 text-sm leading-5 text-gray-500">
-                Keep control of your wallet credentials and supported assets.
-              </p>
-
-            </div>
-
-            {/* SPEED */}
-            <div className="rounded-3xl bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#efedff] text-[#625bea]">
-                <Zap size={21} />
-              </div>
-
-              <h3 className="mt-5 font-semibold">
-                Fast access
-              </h3>
-
-              <p className="mt-2 text-sm leading-5 text-gray-500">
-                Access supported wallet features from one simple interface.
-              </p>
-
-            </div>
-
-            {/* ECOSYSTEM */}
-            <div className="rounded-3xl bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#efedff] text-[#625bea]">
-                <Globe2 size={21} />
-              </div>
-
-              <h3 className="mt-5 font-semibold">
-                Ecosystem
-              </h3>
-
-              <p className="mt-2 text-sm leading-5 text-gray-500">
-                Explore applications and services connected to InterLink.
-              </p>
-
-            </div>
-
-            {/* FEATURES */}
-            <div className="rounded-3xl bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#efedff] text-[#625bea]">
-                <Gift size={21} />
-              </div>
-
-              <h3 className="mt-5 font-semibold">
-                Wallet features
-              </h3>
-
-              <p className="mt-2 text-sm leading-5 text-gray-500">
-                Discover supported features as the ecosystem develops.
-              </p>
-
-            </div>
-
-          </div>
-        </section>
-
-        {/* =====================================
-            EDUCATIONAL CARD
-        ====================================== */}
-
-        <section className="relative mt-7 overflow-hidden rounded-[28px] bg-linear-to-br from-[#e9e7ff] to-[#f7f7ff] p-7 sm:p-10">
-
-          <div className="relative z-10 max-w-162.5">
-
-            <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-[#635bdf] shadow-sm">
-              INTERLINK EDUCATION
-            </span>
-
-            <h2 className="mt-5 text-3xl font-semibold leading-tight sm:text-4xl">
-              Understand your wallet before you use it.
-            </h2>
-
-            <p className="mt-4 text-sm leading-6 text-gray-500 sm:text-base sm:leading-7">
-              Learn how wallet activation, security, digital assets and
-              ecosystem applications work before getting started.
-            </p>
-
-            <Link
-              to="/Validate"
-              className="
-                mt-6
-                inline-flex
-                items-center
-                gap-2
-                rounded-full
-                bg-black
-                px-5
-                py-3
-                text-sm
-                font-medium
-                text-white
-                transition
-                hover:bg-[#635bdf]
-              "
-            >
-              Learn more
-
-              <ArrowRight size={16} />
-            </Link>
-
-          </div>
-
-          {/* DECORATIONS */}
-          <div className="absolute -right-16 -top-16 h-52 w-52 rounded-full bg-[#625bea]/10" />
-
-          <div className="absolute -bottom-17.5 right-10 h-40 w-40 rounded-full bg-[#625bea]/10" />
-
-        </section>
-
       </main>
 
       {/* =====================================
           MOBILE BOTTOM NAVIGATION
       ====================================== */}
-
-      <nav
-        className="
-          fixed
-          bottom-4
-          left-1/2
-          z-50
-          w-[calc(100%-32px)]
-          max-w-md
-          -translate-x-1/2
-          rounded-full
-          border
-          border-gray-100
-          bg-white/95
-          p-2
-          shadow-[0_10px_40px_rgba(0,0,0,0.12)]
-          backdrop-blur-xl
-        "
-      >
-
+      <nav className="fixed bottom-4 left-1/2 z-50 w-[calc(100%-32px)] max-w-md -translate-x-1/2 rounded-full border border-gray-100 bg-white/95 p-2 shadow-[0_10px_40px_rgba(0,0,0,0.08)] backdrop-blur-xl">
         <div className="flex items-center justify-around">
-
-          {/* GLOBAL */}
           <Link
-            to="/Validate"
+            to="/Wellet"
             aria-label="Global"
-            className="
-              flex
-              h-12
-              w-12
-              items-center
-              justify-center
-              rounded-full
-              text-xl
-              transition
-              hover:bg-gray-100
-            "
+            className="flex h-12 w-12 items-center justify-center text-[22px] transition hover:bg-gray-100 rounded-full"
           >
             🌍
           </Link>
-
-          {/* HOME */}
           <button
             type="button"
             aria-label="Home"
-            className="
-              flex
-              h-14
-              w-14
-              items-center
-              justify-center
-              rounded-full
-              bg-[#11111c]
-              text-white
-              shadow-lg
-            "
+            className="flex h-14 w-14 items-center justify-center rounded-full bg-[#11111c] text-white shadow-md"
           >
             <Home size={22} />
           </button>
-
-          {/* STORE */}
           <Link
-            to="/Validate"
-            aria-label="Marketplace"
-            className="
-              flex
-              h-12
-              w-12
-              items-center
-              justify-center
-              text-gray-700
-              transition
-              hover:text-[#625bea]
-            "
+            to="/Wellet"
+            aria-label="Store"
+            className="flex h-12 w-12 items-center justify-center text-gray-700 transition hover:text-[#6c5ce7] rounded-full"
           >
             <Store size={23} />
           </Link>
-
-          {/* SHARE */}
           <Link
-            to="/Validate"
-            aria-label="Share"
-            className="
-              flex
-              h-12
-              w-12
-              items-center
-              justify-center
-              text-gray-700
-              transition
-              hover:text-[#625bea]
-            "
+            to="/Wellet"
+            aria-label="Settings"
+            className="flex h-12 w-12 items-center justify-center text-gray-700 transition hover:text-[#6c5ce7] rounded-full"
           >
-            <Share2 size={23} />
+            <Settings size={23} />
           </Link>
-
         </div>
       </nav>
-
-      {/* =====================================
-          ANIMATION
-      ====================================== */}
-
-      <style>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(8px);
-          }
-
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
-
     </div>
   );
 };
